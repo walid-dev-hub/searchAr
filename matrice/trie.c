@@ -4,7 +4,7 @@
 #include <stddef.h> 
 #include <limits.h> 
 #include <string.h>
-#include "trieMatrice.h"
+#include "trie.h"
 
 
 void affichageEnsemble(unsigned char **ensemble,int cardinal){
@@ -31,14 +31,14 @@ int calculMaxNode(unsigned char **ensemble,int cardinal){//extraire maxNode depu
     return maxNode+1; 
 }
 
-void initFinite(char *finite,int maxNode){ //j'initialise le tableau d'état finaux à 0 donc pas d'état finle en ce moment.
+static void initFinite(char *finite,int maxNode){ //j'initialise le tableau d'état finaux à 0 donc pas d'état finle en ce moment.
     for(int i=0;i<maxNode;i++){
         finite[i]=0;
     }
     return;
 }
 
-void initTransition(int **transition,int maxNode){ //j'initialise la matrice de transitions à -1 pas de transition existante.
+static void initTransition(int **transition,int maxNode){ //j'initialise la matrice de transitions à -1 pas de transition existante.
     for(int i=0;i<maxNode;i++){
         for(int j=0;j<=UCHAR_MAX;j++){
             transition[i][j]=-1;
@@ -47,20 +47,21 @@ void initTransition(int **transition,int maxNode){ //j'initialise la matrice de 
     return;
 }
 
-void affichageFinite(char *finite,int maxNode){ 
+static void affichageFinite(char *finite,int maxNode){
+    printf("\nTable des finaux : \n");
+    printf("ÉTAT -> Finale?\n\n"); 
     for(int i=0;i<maxNode;i++){
-        printf("ÉTAT -> Finale?\n\n");
         printf("%d -> %d\n",i,finite[i]);
     }
     return;
 }
 
-void freeFinite(char *finite){
+static void freeFinite(char *finite){
     free(finite);
     return;
 }
 
-void affichageTransition(int **transition,int maxNode){ 
+static void affichageTransition(int **transition,int maxNode){ 
     printf("\nTable de transition : \n");
     for(int i=0;i<maxNode;i++){
         for(int j=0;j<=UCHAR_MAX;j++){
@@ -73,7 +74,15 @@ void affichageTransition(int **transition,int maxNode){
     return;
 }
 
-void freeTransition(int **transition,int maxNode){
+void affichageTrie(Trie trie){
+    printf("\n\n***************** Trie *****************");
+    printf("\n\nNombre d'état crées est %d",trie->nextNode);
+    affichageTransition(trie->transition,trie->maxNode);
+    affichageFinite(trie->finite,trie->maxNode);
+    
+}
+
+static void freeTransition(int **transition,int maxNode){
     for(int i=0;i<maxNode;i++){
         free(transition[i]);
     }
@@ -97,6 +106,8 @@ Trie createTrie(int maxNode){
 }
 
 void freeTrie(Trie trie){
+    freeTransition(trie->transition,trie->maxNode);
+    freeFinite(trie->finite);
     free(trie);
     return;
 }
@@ -112,7 +123,7 @@ void insertInTrie(Trie trie, unsigned char *w){
     if (i==taille&&trie->finite[state]==1){
         printf("\n Le mot %s existe déja !",w);
     }else{
-        for(i;i<taille;i++){
+        for(;i<taille;i++){
             trie->transition[state][w[i]] = trie->nextNode;
             state = trie->nextNode;
             trie->nextNode++;
@@ -137,8 +148,6 @@ int isInTrie(Trie trie, unsigned char *w){
     if(i == taille){
         if(trie->finite[state]==1){
             return 1;
-        }else{
-            printf("\nle mot \"%s\" n'existe pas dans la trie mais il est un préfixe d'un autre mot !",(char *)w);
         }
     }
     return 0;
@@ -180,7 +189,7 @@ Trie suffixTrie(unsigned char *mot){
         suff[taille-i] = '\0';
         insertInTrie(sfTrie,(unsigned char *)suff);
     }
-    
+    sfTrie->finite[0]=1;
     return sfTrie;
 }
 
@@ -205,8 +214,6 @@ Trie facteurTrie(unsigned char *mot){
     }
     return ftTrie;
 }
-
-
 
 
 
