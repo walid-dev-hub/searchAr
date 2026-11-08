@@ -13,6 +13,7 @@ Deux représentations sont fournies : une **matrice de transitions** et une **ta
 ```
 git clone <url-du-dépôt>
 cd searchAr
+cd methods
 make                       # construit les deux versions
 make searchAr_matrice      # version matrice seulement
 make searchAr_hash         # version table de hachage seulement
